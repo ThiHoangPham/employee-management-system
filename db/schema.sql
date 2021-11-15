@@ -1,4 +1,4 @@
--- creation table of db
+-- creation tables of db
 DROP DATABASE IF EXISTS employees;
 CREATE DATABASE employees;
 USE employees;
