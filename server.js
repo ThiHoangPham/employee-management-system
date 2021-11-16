@@ -463,11 +463,45 @@ const removeEmployee = () => {
                 let sql = `DELETE FROM employee WHERE employee.id = ?`;
                 connection.query(sql, [employeeId], (error) => {
                     if (error) throw error;
-                    console.log(chalk.blueBright.bold(`Employee Successfully Removed`));
+                    console.log(chalk.blueBright.bold(`Employee Has Successfully Removed`));
                     viewAllEmployees();
                 });
             });
     });
 };
 
-// 
+// function delete role
+const removeRole = () => {
+    let sql = `SELECT 
+        role.id,
+        role.title FROM role`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        let roleNamesArray = [];
+        response.forEach((role) => { roleNamesArray.push(role.title); });
+        inquirer
+            .prompt([
+                {
+                    name: 'chosenRole',
+                    type: 'list',
+                    message: 'Which role would you like to remove?',
+                    choices: roleNamesArray
+                }
+            ])
+            .then((answer) => {
+                let roleId;
+
+                response.forEach((role) => {
+                    if (answer.chosenRole === role.title) {
+                        roleId = role.id;
+                    }
+                });
+                let sql = `DELETE FROM role WHERE role.id = ?`;
+                connection.promise().query(sql, [roleId], (error) => {
+                    if (error) throw error;
+                    console.log(chalk.blueBright.bold(`Role Has Successfully Removed`));
+                    viewAllRoles();
+                });
+            });
+    });
+};
