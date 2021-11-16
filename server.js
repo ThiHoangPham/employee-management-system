@@ -8,13 +8,11 @@ const validate = require('./utils/validate');
 // start title
 connection.connect((error) => {
     if (error) throw error;
-    console.log(chalk.blueBright.bold(`=====================================================================================`));
-    console.log(chalk.blueBright.bold(`=                                                                                   =`));
-    console.log(chalk.blueBright.bold(`=                                                                                   =`));
-    console.log(chalk.blueBright.bold(figlet.textSync('EmployeeS Tracker')));
-    console.log(chalk.blueBright.bold(`=                                                                                   =`));
-    console.log(chalk.blueBright.bold(`=                                                                                   =`));
-    console.log(chalk.blueBright.bold(`=====================================================================================`));
+    console.log(chalk.blueBright.bold(`==========================================================================================`));
+    console.log(chalk.blueBright.bold(`=                                                                                        =`));
+    console.log(chalk.blueBright.bold(figlet.textSync('Employees Tracker')));
+    console.log(chalk.blueBright.bold(`=                                                                                        =`));
+    console.log(chalk.blueBright.bold(`==========================================================================================`));
     promptUser();
 });
 
@@ -88,20 +86,19 @@ const promptUser = () => {
 
 // function view all employees
 const viewAllEmployees = () => {
-    const sql = `SELECT 
-        employee.id,
-        employee.first_name,
-        employee_lastname,
-        role.title,
-        department.department_name AS 'department',
-        role.salary
-        FROM employee, role, department
-        WHERE department.id = role.department_id
-        AND role.id = employee.role_id
-        ORDER BY employee.id ASC`;
+    let sql = `SELECT employee.id, 
+                    employee.first_name, 
+                    employee.last_name, 
+                    role.title, 
+                    department.department_name AS 'department', 
+                    role.salary
+                    FROM employee, role, department 
+                    WHERE department.id = role.department_id 
+                    AND role.id = employee.role_id
+                    ORDER BY employee.id ASC`;
     connection.promise().query(sql, (error, response) => {
         if (error) throw error;
-        console.log(`                              ` + chalk.blueBright.bold(`All Current Employees:`));
+        console.log(`                                    ` + chalk.blueBright.bold(`All Current Employees:`));
         console.table(response);
         promptUser();
     });
@@ -109,9 +106,10 @@ const viewAllEmployees = () => {
 
 // function view roles
 const viewAllRoles = () => {
-    console.log(`                              ` + chalk.blueBright.bold(`All Current Employee Roles:`));
+    console.log(`                                    ` + chalk.blueBright.bold(`All Current Employee Roles:`));
     const sql = `SELECT 
-        role.id, role.title, 
+        role.id,
+        role.title,
         department.department_name AS department
         FROM role INNER JOIN department ON role.department_id = department.id`;
     connection.promise().query(sql, (error, response) => {
@@ -128,7 +126,7 @@ const viewAllDepartments = () => {
         department.department_name AS department FROM department`;
     connection.promise().query(sql, (error, response) => {
         if (error) throw error;
-        console.log(`                              ` + chalk.blueBright.bold(`All Current Departments:`));
+        console.log(`                                   ` + chalk.blueBright.bold(`All Current Departments:`));
         console.table(response);
         promptUser();
     });
@@ -145,7 +143,7 @@ const viewEmployeesByDepartment = () => {
         LEFT JOIN department ON role.department_id = department.id`;
     connection.query(sql, (error, response) => {
         if (error) throw error;
-        console.log(`                              ` + chalk.blueBright.bold(`All Employees by Department:`));
+        console.log(`                                   ` + chalk.blueBright.bold(`All Employees by Department:`));
         console.table(response);
         promptUser();
     });
@@ -183,7 +181,9 @@ const addEmployee = () => {
     ])
         .then(answer => {
             const crit = [answer.fistName, answer.lastName]
-            const roleSql = `SELECT role.id, role.title FROM role`;
+            const roleSql = `SELECT 
+                role.id,
+                role.title FROM role`;
             connection.promise().query(roleSql, (error, data) => {
                 if (error) throw error;
                 const roles = data.map(({ id, title }) => ({ name: title, value: id }));
@@ -320,7 +320,6 @@ const updateEmployeeRole = () => {
         if (error) throw error;
         let employeeNamesArray = [];
         response.forEach((employee) => { employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`); });
-
         let sql = `SELECT 
             role.id, role.title FROM role`;
         connection.promise().query(sql, (error, response) => {
@@ -501,6 +500,41 @@ const removeRole = () => {
                     if (error) throw error;
                     console.log(chalk.blueBright.bold(`Role Has Successfully Removed`));
                     viewAllRoles();
+                });
+            });
+    });
+};
+
+// function delete department
+const removeDepartment = () => {
+    let sql = `SELECT 
+        department.id,
+        department.department_name FROM department`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        let departmentNamesArray = [];
+        response.forEach((department) => { departmentNamesArray.push(department.department_name); });
+        inquirer
+            .prompt([
+                {
+                    name: 'chosenDept',
+                    type: 'list',
+                    message: 'Which department would you like to remove?',
+                    choices: departmentNamesArray
+                }
+            ])
+            .then((answer) => {
+                let departmentId;
+                response.forEach((department) => {
+                    if (answer.chosenDept === department.department_name) {
+                        departmentId = department.id;
+                    }
+                });
+                let sql = `DELETE FROM department WHERE department.id = ?`;
+                connection.promise().query(sql, [departmentId], (error) => {
+                    if (error) throw error;
+                    console.log(chalk.redBright(`Department Has Successfully Removed`));
+                    viewAllDepartments();
                 });
             });
     });
