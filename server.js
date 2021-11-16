@@ -6,19 +6,19 @@ const figlet = require('figlet');
 const validate = require('./utils/validate');
 
 // start title
-connection.conmect((error) => {
+connection.connect((error) => {
     if (error) throw error;
-    console.log(chalk.blueBright.bold(`====================================================================================`));
-    console.log(chalk.blueBright.bold(`=                                                                                  =`));
-    console.log(chalk.blueBright.bold(`=                                                                                  =`));
+    console.log(chalk.blueBright.bold(`=====================================================================================`));
+    console.log(chalk.blueBright.bold(`=                                                                                   =`));
+    console.log(chalk.blueBright.bold(`=                                                                                   =`));
     console.log(chalk.blueBright.bold(figlet.textSync('EmployeeS Tracker')));
-    console.log(chalk.blueBright.bold(`=                                                                                  =`));
-    console.log(chalk.blueBright.bold(`=                                                                                  =`));
-    console.log(chalk.blueBright.bold(`====================================================================================`));
+    console.log(chalk.blueBright.bold(`=                                                                                   =`));
+    console.log(chalk.blueBright.bold(`=                                                                                   =`));
+    console.log(chalk.blueBright.bold(`=====================================================================================`));
     promptUser();
 });
 
-// Choices menu
+// choices menu
 const promptUser = () => {
     inquirer.prompt([
         {
@@ -110,9 +110,10 @@ const viewAllEmployees = () => {
 // function view roles
 const viewAllRoles = () => {
     console.log(`                              ` + chalk.blueBright.bold(`All Current Employee Roles:`));
-    const sql = `SELECT role.id, role.title, department.department_name AS department
-                    FROM role
-                    INNER JOIN department ON role.department_id = department.id`;
+    const sql = `SELECT 
+        role.id, role.title, 
+        department.department_name AS department
+        FROM role INNER JOIN department ON role.department_id = department.id`;
     connection.promise().query(sql, (error, response) => {
         if (error) throw error;
         response.forEach((role) => { console.log(role.title); });
@@ -122,7 +123,9 @@ const viewAllRoles = () => {
 
 // function view all departments
 const viewAllDepartments = () => {
-    const sql = `SELECT department.id AS id, department.department_name AS department FROM department`;
+    const sql = `SELECT 
+        department.id AS id, 
+        department.department_name AS department FROM department`;
     connection.promise().query(sql, (error, response) => {
         if (error) throw error;
         console.log(`                              ` + chalk.blueBright.bold(`All Current Departments:`));
@@ -131,4 +134,97 @@ const viewAllDepartments = () => {
     });
 };
 
-// function 
+// function view all employees by department
+const viewEmployeesByDepartment = () => {
+    const sql = `SELECT 
+        employee.first_name, 
+        employee.last_name, 
+        department.department_name AS department
+        FROM employee 
+        LEFT JOIN role ON employee.role_id = role.id 
+        LEFT JOIN department ON role.department_id = department.id`;
+    connection.query(sql, (error, response) => {
+        if (error) throw error;
+        console.log(`                              ` + chalk.blueBright.bold(`All Employees by Department:`));
+        console.table(response);
+        promptUser();
+    });
+};
+
+// function add new employee
+const addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'fistName',
+            message: "What is the employee's first name?",
+            validate: addFirstName => {
+                if (addFirstName) {
+                    return true;
+                } else {
+                    console.log('Please enter a first name');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "What is the employee's last name?",
+            validate: addLastName => {
+                if (addLastName) {
+                    return true;
+                } else {
+                    console.log('Please enter a last name');
+                    return false;
+                }
+            }
+        }
+    ])
+        .then(answer => {
+            const crit = [answer.fistName, answer.lastName]
+            const roleSql = `SELECT role.id, role.title FROM role`;
+            connection.promise().query(roleSql, (error, data) => {
+                if (error) throw error;
+                const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: "What is the employee's role?",
+                        choices: roles
+                    }
+                ])
+                    .then(roleChoice => {
+                        const role = roleChoice.role;
+                        crit.push(role);
+                        const managerSql = `SELECT * FROM employee`;
+                        connection.promise().query(managerSql, (error, data) => {
+                            if (error) throw error;
+                            const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
+                            inquirer.prompt([
+                                {
+                                    type: 'list',
+                                    name: 'manager',
+                                    message: "Who is the employee's manager?",
+                                    choices: managers
+                                }
+                            ])
+                                .then(managerChoice => {
+                                    const manager = managerChoice.manager;
+                                    crit.push(manager);
+                                    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                    VALUES (?, ?, ?, ?)`;
+                                    connection.query(sql, crit, (error) => {
+                                        if (error) throw error;
+                                        console.log("Employee has been added!")
+                                        viewAllEmployees();
+                                    });
+                                });
+                        });
+                    });
+            });
+        });
+};
+
+// 
