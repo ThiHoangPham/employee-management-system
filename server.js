@@ -121,3 +121,14 @@ const viewAllRoles = () => {
 };
 
 // function view all departments
+const viewAllDepartments = () => {
+    const sql = `SELECT department.id AS id, department.department_name AS department FROM department`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        console.log(`                              ` + chalk.blueBright.bold(`All Current Departments:`));
+        console.table(response);
+        promptUser();
+    });
+};
+
+// function 
