@@ -30,7 +30,6 @@ const promptUser = () => {
                 'View All Roles',
                 'View All Departments',
                 'View All Employees By Department',
-                'View Department Budgets',
                 'Update Employee Role',
                 'Update Employee Manager',
                 'Add Employee',
@@ -45,6 +44,68 @@ const promptUser = () => {
     ])
         .then((answers) => {
             const { choices } = answers;
-            if { choices }
-        })
-}
+            if (choices === 'View All Employees') {
+                viewAllEmployees();
+            }
+            if (choices === 'View All Departments') {
+                viewAllDepartments();
+            }
+            if (choices === 'View All Employees By Department') {
+                viewEmployeesByDepartment();
+            }
+            if (choices === 'Add Employee') {
+                addEmployee();
+            }
+            if (choices === 'Remove Employee') {
+                removeEmployee();
+            }
+            if (choices === 'Update Employee Role') {
+                updateEmployeeRole();
+            }
+            if (choices === 'Update Employee Manager') {
+                updateEmployeeManager();
+            }
+            if (choices === 'View All Roles') {
+                viewAllRoles();
+            }
+            if (choices === 'Add Role') {
+                addRole();
+            }
+            if (choices === 'Remove Role') {
+                removeRole();
+            }
+            if (choices === 'Add Department') {
+                addDepartment();
+            }
+            if (choices === 'Remove Department') {
+                removeDepartment();
+            }
+            if (choices === 'Exit') {
+                connection.end();
+            }
+        });
+};
+
+// function view all employees
+const viewAllEmployees = () => {
+    let sql = `SELECT 
+        employee.id,
+        employee.first_name,
+        employee_lastname,
+        role.title,
+        department.department_name AS 'department',
+        role.salary
+        FROM employee, role, department
+        WHERE department.id = role.department_id
+        AND role.id = employee.role_id
+        ORDER BY employee.id ASC`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        console.log(`                              ` + chalk.blueBright.bold(`Current Employees:`));
+        console.table(response);
+        promptUser();
+    });
+};
+
+// function view role
+
