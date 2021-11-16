@@ -88,7 +88,7 @@ const promptUser = () => {
 
 // function view all employees
 const viewAllEmployees = () => {
-    let sql = `SELECT 
+    const sql = `SELECT 
         employee.id,
         employee.first_name,
         employee_lastname,
@@ -101,11 +101,23 @@ const viewAllEmployees = () => {
         ORDER BY employee.id ASC`;
     connection.promise().query(sql, (error, response) => {
         if (error) throw error;
-        console.log(`                              ` + chalk.blueBright.bold(`Current Employees:`));
+        console.log(`                              ` + chalk.blueBright.bold(`All Current Employees:`));
         console.table(response);
         promptUser();
     });
 };
 
-// function view role
+// function view roles
+const viewAllRoles = () => {
+    console.log(`                              ` + chalk.blueBright.bold(`All Current Employee Roles:`));
+    const sql = `SELECT role.id, role.title, department.department_name AS department
+                    FROM role
+                    INNER JOIN department ON role.department_id = department.id`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        response.forEach((role) => { console.log(role.title); });
+        promptUser();
+    });
+};
 
+// function view all departments
