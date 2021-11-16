@@ -307,7 +307,7 @@ const addDepartment = () => {
         });
 };
 
-// funtion update employee role
+// function update employee role
 const updateEmployeeRole = () => {
     let sql = `SELECT
         employee.id, 
@@ -372,3 +372,102 @@ const updateEmployeeRole = () => {
         });
     });
 };
+
+// function update employee manager
+const updateEmployeeManager = () => {
+    let sql = `SELECT 
+        employee.id,
+        employee.first_name, 
+        employee.last_name, 
+        employee.manager_id FROM employee`;
+    connection.promise().query(sql, (error, response) => {
+        let employeeNamesArray = [];
+        response.forEach((employee) => { employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`); });
+        inquirer
+            .prompt([
+                {
+                    name: 'chosenEmployee',
+                    type: 'list',
+                    message: 'Which employee has a new manager?',
+                    choices: employeeNamesArray
+                },
+                {
+                    name: 'newManager',
+                    type: 'list',
+                    message: 'Who is their manager?',
+                    choices: employeeNamesArray
+                }
+            ])
+            .then((answer) => {
+                let employeeId, managerId;
+                response.forEach((employee) => {
+                    if (
+                        answer.chosenEmployee === `${employee.first_name} ${employee.last_name}`
+                    ) {
+                        employeeId = employee.id;
+                    }
+                    if (
+                        answer.newManager === `${employee.first_name} ${employee.last_name}`
+                    ) {
+                        managerId = employee.id;
+                    }
+                });
+                if (validate.isSame(answer.chosenEmployee, answer.newManager)) {
+                    console.log(chalk.redBright.bold(`Invalid Manager`));
+                    promptUser();
+                } else {
+                    let sql = `UPDATE employee SET employee.manager_id = ? WHERE employee.id = ?`;
+                    connection.query(
+                        sql,
+                        [managerId, employeeId],
+                        (error) => {
+                            if (error) throw error;
+                            console.log(chalk.blueBright.bold(`Employee Manager Updated`));
+                            promptUser();
+                        }
+                    );
+                }
+            });
+    });
+};
+
+// function delete employee
+const removeEmployee = () => {
+    let sql = `SELECT 
+        employee.id,
+        employee.first_name,
+        employee.last_name FROM employee`;
+    connection.promise().query(sql, (error, response) => {
+        if (error) throw error;
+        let employeeNamesArray = [];
+        response.forEach((employee) => { employeeNamesArray.push(`${employee.first_name} ${employee.last_name}`); });
+        inquirer
+            .prompt([
+                {
+                    name: 'chosenEmployee',
+                    type: 'list',
+                    message: 'Which employee would you like to remove?',
+                    choices: employeeNamesArray
+                }
+            ])
+            .then((answer) => {
+                let employeeId;
+                response.forEach((employee) => {
+                    if (
+                        answer.chosenEmployee ===
+                        `${employee.first_name} ${employee.last_name}`
+                    ) {
+                        employeeId = employee.id;
+                    }
+                });
+                let sql = `DELETE FROM employee WHERE employee.id = ?`;
+                connection.query(sql, [employeeId], (error) => {
+                    if (error) throw error;
+                    console.log(chalk.blueBright.bold(`Employee Successfully Removed`));
+                    viewAllEmployees();
+                });
+            });
+    });
+};
+
+// 
