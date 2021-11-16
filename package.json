@@ -1,0 +1,35 @@
+{
+  "name": "employee-management-system",
+  "version": "1.0.0",
+  "description": "Build a command-line application from scratch to manage a company's employee database, using Node.js, Inquirer, and MySQL.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "mysql db/employees.db < db/schema.sql",
+    "seed": "mysql db/employees.db < db/seeds.sql",
+    "db": "mysql db/employees.db",
+    "watch": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThiHoangPham/employee-management-system.git"
+  },
+  "author": "Thai Hoang (Adam)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ThiHoangPham/employee-management-system/issues"
+  },
+  "homepage": "https://github.com/ThiHoangPham/employee-management-system#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "console.table": "^0.10.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "figlet": "^1.5.2",
+    "inquirer": "^8.2.0",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.15",
+    "validator": "^13.7.0"
+  }
+}
