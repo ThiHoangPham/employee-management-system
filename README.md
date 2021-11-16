@@ -12,7 +12,6 @@
   <img alt="mysql" src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white"
   <a href="#">
   <img alt="npm" src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white"
-
   <br>
     
   <a href="https://www.buymeacoffee.com/adampham123">
